@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Negocio de Prueba - Reserva de Turnos</title>
-    <meta name="description" content="Reservá tu turno fácil y rápido">
+    <title>DuniaNails - Reserva de Turnos</title>
+    <meta name="description" content="Reservá tu turno fácil y rápido en DuniaNails">
     
     <!-- PWA Meta Tags con rutas RELATIVAS -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ec4899">
+    <meta name="theme-color" content="#d44c9e">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Negocio Prueba">
+    <meta name="apple-mobile-web-app-title" content="DuniaNails">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
     
@@ -20,7 +20,7 @@
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/proyectoprueba/sw.js')
+            navigator.serviceWorker.register('/dunia-nails/sw.js')
                 .then(registration => {
                     console.log('✅ Service Worker registrado:', registration.scope);
                 })
@@ -105,7 +105,7 @@ window.addEventListener('load', () => {
         btn.style.bottom = '20px';
         btn.style.right = '20px';
         btn.style.zIndex = '9999';
-        btn.style.background = '#ec4899';
+        btn.style.background = '#d44c9e';
         btn.style.color = 'white';
         btn.style.padding = '15px 30px';
         btn.style.borderRadius = '50px';
