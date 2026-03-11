@@ -1,6 +1,6 @@
-// utils/whatsapp-helper.js - VERSIÓN DINÁMICA (CORREGIDA)
+// utils/whatsapp-helper.js - VERSIÓN DINÁMICA CON ANTICIPO
 
-console.log('📱 whatsapp-helper.js - VERSIÓN DINÁMICA');
+console.log('📱 whatsapp-helper.js - VERSIÓN DINÁMICA CON ANTICIPO');
 
 // ============================================
 // FUNCIÓN PARA OBTENER CONFIGURACIÓN DEL NEGOCIO
@@ -102,16 +102,16 @@ window.enviarNotificacionPush = async function(titulo, mensaje, etiquetas = 'bel
 };
 
 // ============================================
-// NOTIFICACIÓN DE NUEVA RESERVA
+// NOTIFICACIÓN DE RESERVA PENDIENTE (SOLICITUD INICIAL CON PUSH)
 // ============================================
-window.notificarNuevaReserva = async function(booking) {
+window.notificarReservaPendiente = async function(booking) {
     try {
         if (!booking) {
             console.error('❌ No hay datos de reserva');
             return false;
         }
 
-        console.log('📤 Procesando notificación de NUEVA RESERVA');
+        console.log('📤 Procesando notificación de RESERVA PENDIENTE (CON PUSH)');
 
         const config = await getConfigNegocio();
         
@@ -127,7 +127,7 @@ window.notificarNuevaReserva = async function(booking) {
         
         // WhatsApp a la dueña
         const mensajeWhatsApp = 
-`🎉 *NUEVA RESERVA - ${config.nombre}*
+`🆕 *SOLICITUD DE TURNO - ${config.nombre}*
 
 👤 *Cliente:* ${booking.cliente_nombre}
 📱 *WhatsApp:* ${booking.cliente_whatsapp}
@@ -135,29 +135,77 @@ window.notificarNuevaReserva = async function(booking) {
 📅 *Fecha:* ${fechaConDia}
 ⏰ *Hora:* ${horaFormateada}
 👩‍🎨 *Profesional:* ${profesional}
+💰 *Estado:* Pendiente de pago
 
-✅ Reserva confirmada automáticamente.`;
+✅ Ingresá al panel para confirmar el pago cuando llegue:
+https://tusalon.github.io/dunia-nails/admin-login.html`;
 
         window.enviarWhatsApp(config.telefono, mensajeWhatsApp);
         
-        // Push notification
+        // ✅ PUSH NOTIFICATION para la solicitud
         const mensajePush = 
-`🎉 NUEVA RESERVA - ${config.nombre}
+`🆕 SOLICITUD PENDIENTE - ${config.nombre}
 👤 Cliente: ${booking.cliente_nombre}
-📱 WhatsApp: ${booking.cliente_whatsapp}
-💅 Servicio: ${booking.servicio} (${booking.duracion} min)
-📅 Fecha: ${fechaConDia}
-⏰ Hora: ${horaFormateada}
-👩‍🎨 Profesional: ${profesional}`;
+💰 Estado: Esperando pago`;
 
         await window.enviarNotificacionPush(
-            `🎉 ${config.nombre} - Nueva reserva`,
+            `💰 ${config.nombre} - Pago pendiente`,
             mensajePush,
-            'tada',
-            'default'
+            'moneybag',
+            'high'  // Prioridad alta
         );
         
-        console.log('✅ Notificaciones de nueva reserva enviadas');
+        console.log('✅ Notificación de reserva pendiente enviada (con push)');
+        return true;
+    } catch (error) {
+        console.error('Error en notificarReservaPendiente:', error);
+        return false;
+    }
+};
+
+// ============================================
+// NOTIFICACIÓN DE NUEVA RESERVA (AHORA SIN PUSH)
+// ============================================
+window.notificarNuevaReserva = async function(booking) {
+    try {
+        if (!booking) {
+            console.error('❌ No hay datos de reserva');
+            return false;
+        }
+
+        console.log('📤 Procesando notificación de RESERVA CONFIRMADA (SIN PUSH)');
+
+        const config = await getConfigNegocio();
+        
+        const fechaConDia = window.formatFechaCompleta ? 
+            window.formatFechaCompleta(booking.fecha) : 
+            booking.fecha;
+        
+        const horaFormateada = window.formatTo12Hour ? 
+            window.formatTo12Hour(booking.hora_inicio) : 
+            booking.hora_inicio;
+            
+        const profesional = booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
+        
+        // WhatsApp a la dueña
+        const mensajeWhatsApp = 
+`🎉 *TURNO CONFIRMADO - ${config.nombre}*
+
+👤 *Cliente:* ${booking.cliente_nombre}
+📱 *WhatsApp:* ${booking.cliente_whatsapp}
+💅 *Servicio:* ${booking.servicio} (${booking.duracion} min)
+📅 *Fecha:* ${fechaConDia}
+⏰ *Hora:* ${horaFormateada}
+👩‍🎨 *Profesional:* ${profesional}
+💰 *Estado:* Pagado - Reservado
+
+✅ El cliente ya realizó el pago.`;
+
+        window.enviarWhatsApp(config.telefono, mensajeWhatsApp);
+        
+        // 🔥 PUSH ELIMINADO - Solo se envía en la solicitud pendiente
+        
+        console.log('✅ Notificación de reserva confirmada enviada (sin push)');
         return true;
     } catch (error) {
         console.error('Error en notificarNuevaReserva:', error);
@@ -249,4 +297,4 @@ ${canceladoPor === 'cliente' ? '🔔 Cancelado por cliente' : '🔔 Cancelado po
     }
 };
 
-console.log('✅ whatsapp-helper.js - VERSIÓN DINÁMICA CARGADA');
+console.log('✅ whatsapp-helper.js - VERSIÓN DINÁMICA CON ANTICIPO CARGADA');

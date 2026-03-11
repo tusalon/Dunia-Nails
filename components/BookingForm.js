@@ -1,4 +1,4 @@
-// components/BookingForm.js - VERSIÓN IPHONE (con estilos originales)
+// components/BookingForm.js - VERSIÓN IPHONE CON ANTICIPO
 
 function BookingForm({ service, profesional, date, time, onSubmit, onCancel, cliente }) {
     const [submitting, setSubmitting] = React.useState(false);
@@ -113,7 +113,7 @@ function BookingForm({ service, profesional, date, time, onSubmit, onCancel, cli
         const linea5 = `Client: ${bookingData.cliente_nombre}`;
         const linea6 = `WhatsApp: +53 ${bookingData.cliente_whatsapp}`;
         const linea7 = ``;
-        const linea8 = `Negocio de Prueba`;
+        const linea8 = `DuniaNails`;
         
         // Aplicar partición de líneas largas
         const descripcion = `${partirLinea(linea1)}\n${partirLinea(linea2)}\n${partirLinea(linea3)}\n${partirLinea(linea4)}\n${partirLinea(linea5)}\n${partirLinea(linea6)}\n${linea7}\n${linea8}`;
@@ -150,10 +150,10 @@ DTSTART:${dtstart}
 DTEND:${dtend}
 SUMMARY:${bookingData.servicio} with ${bookingData.profesional_nombre}
 TRANSP:OPAQUE
-LOCATION:Negocio de Prueba
+LOCATION:DuniaNails
 DESCRIPTION:${descripcion}
-ORGANIZER;CN="Negocio de Prueba":mailto:studioisma@gmail.com
-ATTENDEE;ROLE=CHAIR;CUTYPE=INDIVIDUAL;RSVP=FALSE;CN="Negocio de Prueba":MAILTO:studioisma@gmail.com
+ORGANIZER;CN="DuniaNails":mailto:studioisma@gmail.com
+ATTENDEE;ROLE=CHAIR;CUTYPE=INDIVIDUAL;RSVP=FALSE;CN="DuniaNails":MAILTO:studioisma@gmail.com
 ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=INDIVIDUAL;RSVP=FALSE;CN="${bookingData.cliente_nombre}":MAILTO:cliente@email.com
 STATUS:CONFIRMED
 CLASS:PUBLIC
@@ -194,6 +194,60 @@ END:VCALENDAR`;
     }
 
     // ============================================
+    // FUNCIÓN PARA ENVIAR DATOS DE PAGO POR WHATSAPP (PERSONALIZADA PARA DUNIANAILS)
+    // ============================================
+    const enviarDatosPagoWhatsApp = (clienteWhatsapp, datosReserva) => {
+        try {
+            const fechaConDia = window.formatFechaCompleta ? 
+                window.formatFechaCompleta(datosReserva.fecha) : 
+                datosReserva.fecha;
+            
+            const horaFormateada = window.formatTo12Hour ? 
+                window.formatTo12Hour(datosReserva.hora_inicio) : 
+                datosReserva.hora_inicio;
+            
+            // Calcular el anticipo (40% del precio del servicio)
+            const precioServicio = service?.precio || 0;
+            const anticipo = (precioServicio * 0.4).toFixed(2);
+
+            // 🔥 PERSONALIZADO PARA DUNIANAILS
+            const mensajePago = 
+`💅 *DuniaNails - Confirmación de Turno*
+
+✅ *SOLICITUD DE TURNO REGISTRADA*
+
+📅 *Fecha:* ${fechaConDia}
+⏰ *Hora:* ${horaFormateada}
+💈 *Servicio:* ${datosReserva.servicio}
+👩‍🎨 *Profesional:* ${datosReserva.profesional_nombre}
+
+💰 *Para confirmar tu turno*, envía el *anticipo de $${anticipo}* (40% del servicio) por:
+
+🏦 *Transferencia bancaria:* 
+   CBU: 1234567890123456789012
+   Alias: dunia.pagos.mp
+
+📲 *Mercado Pago:* 
+   https://mpago.la/1ejemplo
+
+📱 *Enviar comprobante a este WhatsApp:* 
+   +53 59315976
+
+⏳ *Importante:* 
+El turno se cancelará automáticamente si no se confirma el pago dentro de las **2 horas**.
+
+¡Gracias por elegirnos! 💖`;
+
+            window.enviarWhatsApp(clienteWhatsapp, mensajePago);
+            console.log('📤 Mensaje con datos de pago enviado al cliente');
+            return true;
+        } catch (error) {
+            console.error('Error enviando datos de pago:', error);
+            return false;
+        }
+    };
+
+    // ============================================
     // HANDLE SUBMIT (CON ESTILOS ORIGINALES)
     // ============================================
     const handleSubmit = async (e) => {
@@ -224,13 +278,21 @@ END:VCALENDAR`;
                 fecha: date,
                 hora_inicio: time,
                 hora_fin: endTime,
-                estado: "Reservado"
+                estado: "Reservado" // Este estado se sobreescribe en api.js a "Pendiente"
             };
 
             const result = await createBooking(bookingData);
             
             if (result.success && result.data) {
-                console.log('✅ Reserva creada');
+                console.log('✅ Reserva creada con estado PENDIENTE');
+
+                // 🔥 ENVIAR DATOS DE PAGO POR WHATSAPP AL CLIENTE
+                enviarDatosPagoWhatsApp(cliente.whatsapp, result.data);
+
+                // 🔥 NOTIFICAR A LA DUEÑA (solicitud pendiente)
+                if (window.notificarReservaPendiente) {
+                    await window.notificarReservaPendiente(result.data);
+                }
                 
                 const icsContent = generarArchivoCalendario(result.data);
                 
@@ -244,10 +306,6 @@ END:VCALENDAR`;
                 const nombreArchivo = `turno-${fechaSegura}-${horaSegura}-${nombreSeguro}.ics`;
                 
                 descargarArchivoICS(icsContent, nombreArchivo);
-                
-                if (window.notificarNuevaReserva) {
-                    window.notificarNuevaReserva(result.data);
-                }
                 
                 onSubmit(result.data);
             }
