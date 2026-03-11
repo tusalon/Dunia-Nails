@@ -1,4 +1,4 @@
-// utils/whatsapp-helper.js - VERSIÓN DINÁMICA CON ANTICIPO
+// utils/whatsapp-helper.js - VERSIÓN DINÁMICA CON ANTICIPO (CORREGIDA)
 
 console.log('📱 whatsapp-helper.js - VERSIÓN DINÁMICA CON ANTICIPO');
 
@@ -66,7 +66,7 @@ window.enviarWhatsApp = function(telefono, mensaje) {
 };
 
 // ============================================
-// FUNCIÓN PARA ENVIAR NOTIFICACIÓN PUSH (CORREGIDA)
+// FUNCIÓN PARA ENVIAR NOTIFICACIÓN PUSH
 // ============================================
 window.enviarNotificacionPush = async function(titulo, mensaje, etiquetas = 'bell', prioridad = 'default') {
     try {
@@ -102,7 +102,7 @@ window.enviarNotificacionPush = async function(titulo, mensaje, etiquetas = 'bel
 };
 
 // ============================================
-// NOTIFICACIÓN DE RESERVA PENDIENTE (SOLICITUD INICIAL CON PUSH)
+// 🔥 NOTIFICACIÓN DE RESERVA PENDIENTE (SOLO PUSH, SIN WHATSAPP A LA DUEÑA)
 // ============================================
 window.notificarReservaPendiente = async function(booking) {
     try {
@@ -111,7 +111,7 @@ window.notificarReservaPendiente = async function(booking) {
             return false;
         }
 
-        console.log('📤 Procesando notificación de RESERVA PENDIENTE (CON PUSH)');
+        console.log('📤 Procesando notificación de RESERVA PENDIENTE (SOLO PUSH)');
 
         const config = await getConfigNegocio();
         
@@ -125,28 +125,15 @@ window.notificarReservaPendiente = async function(booking) {
             
         const profesional = booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
         
-        // WhatsApp a la dueña
-        const mensajeWhatsApp = 
-`🆕 *SOLICITUD DE TURNO - ${config.nombre}*
-
-👤 *Cliente:* ${booking.cliente_nombre}
-📱 *WhatsApp:* ${booking.cliente_whatsapp}
-💅 *Servicio:* ${booking.servicio} (${booking.duracion} min)
-📅 *Fecha:* ${fechaConDia}
-⏰ *Hora:* ${horaFormateada}
-👩‍🎨 *Profesional:* ${profesional}
-💰 *Estado:* Pendiente de pago
-
-✅ Ingresá al panel para confirmar el pago cuando llegue:
-https://tusalon.github.io/dunia-nails/admin-login.html`;
-
-        window.enviarWhatsApp(config.telefono, mensajeWhatsApp);
+        // 🔥 ELIMINADO: WhatsApp a la dueña
+        // La dueña ya no recibe mensaje de WhatsApp para reservas pendientes
         
-        // ✅ PUSH NOTIFICATION para la solicitud
+        // ✅ PUSH NOTIFICATION (SOLO ESTO)
         const mensajePush = 
 `🆕 SOLICITUD PENDIENTE - ${config.nombre}
 👤 Cliente: ${booking.cliente_nombre}
-💰 Estado: Esperando pago`;
+💰 Estado: Esperando pago
+📱 WhatsApp: ${booking.cliente_whatsapp}`;  // Agregamos el WhatsApp para que la dueña pueda contactar
 
         await window.enviarNotificacionPush(
             `💰 ${config.nombre} - Pago pendiente`,
@@ -155,7 +142,7 @@ https://tusalon.github.io/dunia-nails/admin-login.html`;
             'high'  // Prioridad alta
         );
         
-        console.log('✅ Notificación de reserva pendiente enviada (con push)');
+        console.log('✅ Notificación de reserva pendiente enviada (SOLO PUSH)');
         return true;
     } catch (error) {
         console.error('Error en notificarReservaPendiente:', error);
@@ -164,7 +151,7 @@ https://tusalon.github.io/dunia-nails/admin-login.html`;
 };
 
 // ============================================
-// NOTIFICACIÓN DE NUEVA RESERVA (AHORA SIN PUSH)
+// NOTIFICACIÓN DE NUEVA RESERVA (CONFIRMADA - SIN PUSH)
 // ============================================
 window.notificarNuevaReserva = async function(booking) {
     try {
@@ -187,7 +174,7 @@ window.notificarNuevaReserva = async function(booking) {
             
         const profesional = booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
         
-        // WhatsApp a la dueña
+        // WhatsApp a la dueña (CUANDO SE CONFIRMA EL PAGO)
         const mensajeWhatsApp = 
 `🎉 *TURNO CONFIRMADO - ${config.nombre}*
 
